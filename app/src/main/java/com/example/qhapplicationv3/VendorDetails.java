@@ -4,11 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -17,28 +15,25 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+//Class handles showing User all available details for a Vendor of their choosing
 public class VendorDetails extends AppCompatActivity {
     private static final String BASE = "https://mpvttjjpwghyydfumqxi.supabase.co";
     private static final String ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnR0ampwd2doeXlkZnVtcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTAzODcsImV4cCI6MjA3MjYyNjM4N30.IUkEutAeR0fDZswjXXduZu2CyZJ5eNt9KvCaF0ax9DE";
-
     private String rowId;
     private String role;
     private String council;
 
+    //Sets up the the screen and displays vendor information
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.vendor_info_page);
-
         Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
-
         role = UserAccount.get().getRole();
         council = UserAccount.get().getCouncil();
         boolean isPublic = role == null || role.equalsIgnoreCase("PUBLIC");
-
         Intent intent = getIntent();
         rowId = intent.getStringExtra("id");
-
         setField(R.id.fieldLGA, "LGA Name:", intent.getStringExtra("lga"), false);
         setField(R.id.fieldName, "Name/s:", intent.getStringExtra("name"), true);
         setField(R.id.fieldTradingName, "Trading Name:", intent.getStringExtra("tradingName"), true);
@@ -56,7 +51,6 @@ public class VendorDetails extends AppCompatActivity {
         setField(R.id.fieldPrimaryLocation, "Primary location of vending machine:", intent.getStringExtra("primaryLocation"), true);
         setField(R.id.fieldSerial, "Serial number/ identification number/mark:", intent.getStringExtra("serial"), true);
         setField(R.id.fieldOther2, "Other distinguishing features:", intent.getStringExtra("other2"), true);
-
         Button btnEdit = findViewById(R.id.btnEdit);
         if (isPublic) {
             hide(R.id.fieldStatus);
@@ -92,61 +86,44 @@ public class VendorDetails extends AppCompatActivity {
         }
     }
 
+    //Handles deletion of vendors from Supabase
     public static void deleteVendor(Context ctx, String rowId, String recordLga, Runnable onSuccess) {
-        if (rowId == null || rowId.isEmpty()) {
-            Toast.makeText(ctx, "Missing id", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (rowId == null || rowId.isEmpty()) return;
         String token = UserAccount.get().getAccessToken();
         String role = UserAccount.get().getRole();
         String council = UserAccount.get().getCouncil();
-
-        if (TextUtils.isEmpty(token)) { Toast.makeText(ctx, "Please sign in again", Toast.LENGTH_SHORT).show(); return; }
-        if ("PUBLIC".equalsIgnoreCase(role)) { Toast.makeText(ctx, "Not permitted", Toast.LENGTH_SHORT).show(); return; }
-
+        if (TextUtils.isEmpty(token)) return;
+        if ("PUBLIC".equalsIgnoreCase(role)) return;
         boolean allowed = true;
         if ("COUNCIL".equalsIgnoreCase(role) && !TextUtils.isEmpty(council)) {
             String rec = recordLga == null ? "" : recordLga;
             boolean okExact = council.equals(rec);
             boolean okSlug = council.equalsIgnoreCase(slug(rec));
             boolean okDisplay = rec.equalsIgnoreCase(council.replace("-", " "));
-            Log.d("VendorDetails", "delete guard councilStored=" + council + " recordLga=" + rec + " exact=" + okExact + " slug=" + okSlug + " display=" + okDisplay);
             allowed = okExact || okSlug || okDisplay;
         }
-        if (!allowed) { Toast.makeText(ctx, "Can only delete from " + council, Toast.LENGTH_LONG).show(); return; }
-
+        if (!allowed) return;
         HttpUrl url = HttpUrl.parse(BASE + "/rest/v1/qh_register")
                 .newBuilder()
                 .addQueryParameter("id", "eq." + rowId)
                 .build();
-
         Request req = new Request.Builder()
                 .url(url)
                 .addHeader("apikey", ANON)
                 .addHeader("Authorization", "Bearer " + token)
                 .delete()
                 .build();
-
         new OkHttpClient().newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call call, java.io.IOException e) {
-                new android.os.Handler(ctx.getMainLooper()).post(() ->
-                        Toast.makeText(ctx, "Delete failed", Toast.LENGTH_SHORT).show());
-            }
+            @Override public void onFailure(Call call, java.io.IOException e) {}
             @Override public void onResponse(Call call, Response response) {
-                new android.os.Handler(ctx.getMainLooper()).post(() -> {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(ctx, "Deleted", Toast.LENGTH_SHORT).show();
-                        if (onSuccess != null) onSuccess.run();
-                    } else if (response.code() == 404) {
-                        Toast.makeText(ctx, "Not found", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(ctx, "Delete HTTP " + response.code(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                if (response.isSuccessful() && onSuccess != null) {
+                    new android.os.Handler(ctx.getMainLooper()).post(onSuccess);
+                }
             }
         });
     }
 
+    //Replaces unsafe text with hyphens
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -155,6 +132,7 @@ public class VendorDetails extends AppCompatActivity {
         return t;
     }
 
+    //Displays vendor field and information attached
     private void setField(int id, String label, String value, boolean optional) {
         TextView tv = findViewById(id);
         if (tv == null) return;
@@ -164,17 +142,20 @@ public class VendorDetails extends AppCompatActivity {
         else tv.setText(label + " " + v);
     }
 
+    //Cleans text, removes null spaces
     private String clean(String s) {
         if (s == null) return "";
         String t = s.trim();
         return t.equalsIgnoreCase("null") ? "" : t;
     }
 
+    //Hides field from view
     private void hide(int id) {
         View v = findViewById(id);
         if (v != null) v.setVisibility(View.GONE);
     }
 
+    //Makes a field visible
     private void show(int id) {
         View v = findViewById(id);
         if (v != null) v.setVisibility(View.VISIBLE);

@@ -1,9 +1,7 @@
 package com.example.qhapplicationv3;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
@@ -11,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -24,28 +21,23 @@ import org.json.JSONObject;
 
 public class AddVendor extends AppCompatActivity {
 
-    private static final String TAG = "AddVendor";
     private static final String BASE = "https://mpvttjjpwghyydfumqxi.supabase.co";
     private static final String ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnR0ampwd2doeXlkZnVtcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTAzODcsImV4cCI6MjA3MjYyNjM4N30.IUkEutAeR0fDZswjXXduZu2CyZJ5eNt9KvCaF0ax9DE";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
     private final OkHttpClient http = new OkHttpClient();
-
     private EditText etLga, etName, etTrading, etPhone, etLicence, etExpiry, etReg, etDesc, etVehicle, etMake, etModel, etColour, etPrimary, etSerial, etOther1, etStatus;
 
+    //Loads the screen for adding vendors
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if ("QH".equalsIgnoreCase(UserAccount.get().getRole())) {
             setContentView(R.layout.edit_qh_page);
         } else {
             setContentView(R.layout.edit_page);
         }
-
         TextView tvFormTitle = findViewById(R.id.tvFormTitle);
         TextView tvLgaContext = findViewById(R.id.tvLgaContext);
-
         etLga = findViewById(R.id.etLga);
         etName = findViewById(R.id.etName);
         etTrading = findViewById(R.id.etTrading);
@@ -62,9 +54,7 @@ public class AddVendor extends AppCompatActivity {
         etSerial = findViewById(R.id.etSerial);
         etOther1 = findViewById(R.id.etOther1);
         etStatus = findViewById(R.id.etStatus);
-
         Spinner spLga = findViewById(R.id.spLga);
-
         if ("QH".equalsIgnoreCase(UserAccount.get().getRole())) {
             if (spLga != null && etLga != null) {
                 java.util.List<String> councils = CouncilLookup.all();
@@ -79,16 +69,11 @@ public class AddVendor extends AppCompatActivity {
                 });
             }
         }
-
         String role = UserAccount.get().getRole();
         String council = UserAccount.get().getCouncil();
-
         if (tvFormTitle != null) tvFormTitle.setText("Add vendor");
-        String contextTxt = "QH".equalsIgnoreCase(role)
-                ? "Adding to: Choose council"
-                : "Adding to: " + CouncilLookup.toDisplay(council);
+        String contextTxt = "QH".equalsIgnoreCase(role) ? "Adding to: Choose council" : "Adding to: " + CouncilLookup.toDisplay(council);
         if (tvLgaContext != null) tvLgaContext.setText(contextTxt);
-
         if ("COUNCIL".equalsIgnoreCase(role) && !TextUtils.isEmpty(council)) {
             etLga.setText(CouncilLookup.toDisplay(council));
             etLga.setFocusable(false);
@@ -96,27 +81,19 @@ public class AddVendor extends AppCompatActivity {
             etLga.setClickable(false);
             if (spLga != null) spLga.setVisibility(View.GONE);
         }
-
         Button btnCancel = findViewById(R.id.btnCancel);
         Button btnSave = findViewById(R.id.btnSave);
         btnCancel.setOnClickListener(v -> finish());
         btnSave.setOnClickListener(v -> beginCreate());
     }
 
+    //Validates that necessary fields are filled
     private void beginCreate() {
         String role = UserAccount.get().getRole();
         String council = UserAccount.get().getCouncil();
         String bearer = UserAccount.get().getAccessToken();
-
-        if (TextUtils.isEmpty(bearer)) {
-            Toast.makeText(this, "Please sign in again", Toast.LENGTH_LONG).show();
-            return;
-        }
-        if ("PUBLIC".equalsIgnoreCase(role)) {
-            Toast.makeText(this, "Not permitted", Toast.LENGTH_LONG).show();
-            return;
-        }
-
+        if (TextUtils.isEmpty(bearer)) return;
+        if ("PUBLIC".equalsIgnoreCase(role)) return;
         String lga = nz(etLga.getText().toString());
         String name = nz(etName.getText().toString());
         String trading = nz(etTrading.getText().toString());
@@ -124,74 +101,51 @@ public class AddVendor extends AppCompatActivity {
         String licence = nz(etLicence.getText().toString());
         String expiry = nz(etExpiry.getText().toString());
         String reg = nz(etReg.getText().toString());
-
-        Log.d(TAG, "role=" + role + " councilStored=" + council + " lgaTyped=" + lga + " slugTyped=" + slug(lga));
-
         if (TextUtils.isEmpty(lga) || TextUtils.isEmpty(name) || TextUtils.isEmpty(trading)
                 || TextUtils.isEmpty(phone) || TextUtils.isEmpty(licence)
                 || TextUtils.isEmpty(expiry) || TextUtils.isEmpty(reg)) {
-            Toast.makeText(this, "Fill all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if ("COUNCIL".equalsIgnoreCase(role) && !TextUtils.isEmpty(council)) {
             boolean okExact = council.equals(lga);
             boolean okSlug = council.equalsIgnoreCase(slug(lga));
             boolean okDisplay = lga.equalsIgnoreCase(council.replace("-", " "));
-            Log.d(TAG, "councilMatch exact=" + okExact + " slug=" + okSlug + " display=" + okDisplay);
-            if (!(okExact || okSlug || okDisplay)) {
-                Toast.makeText(this, "LGA must be " + council, Toast.LENGTH_LONG).show();
-                return;
-            }
+            if (!(okExact || okSlug || okDisplay)) return;
         }
-
         JSONObject body = new JSONObject();
         try {
             body.put("[LGA Name]", lga);
             body.put("[* Name/s]", name);
             body.put("[* Trading name]", trading);
-
             String status = nz(etStatus.getText().toString());
             if (!status.isEmpty()) body.put("[Status]", status);
-
             body.put("[* Phone]", phone);
             body.put("[* Licence number]", licence);
             body.put("[* Expiry date]", expiry);
             body.put("[* Registration number]", reg);
-
             String desc = nz(etDesc.getText().toString());
             if (!desc.isEmpty()) body.put("[* Description of the food business]", desc);
-
             String vehicle = nz(etVehicle.getText().toString());
             if (!vehicle.isEmpty()) body.put("[Type of vehicle]", vehicle);
-
             String make = nz(etMake.getText().toString());
             if (!make.isEmpty()) body.put("[Make]", make);
-
             String model = nz(etModel.getText().toString());
             if (!model.isEmpty()) body.put("[Model]", model);
-
             String colour = nz(etColour.getText().toString());
             if (!colour.isEmpty()) body.put("[Colour]", colour);
-
             String primary = nz(etPrimary.getText().toString());
             if (!primary.isEmpty()) body.put("[Primary location of vending machine]", primary);
-
             String serial = nz(etSerial.getText().toString());
             if (!serial.isEmpty()) body.put("[* Serial number/ identification number/mark]", serial);
-
             String other1 = nz(etOther1.getText().toString());
             if (!other1.isEmpty()) body.put("[Other distinguishing features]", other1);
-
         } catch (Exception e) {
-            Toast.makeText(this, "Payload error", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        Log.d(TAG, "JSON payload: " + body.toString());
         doCreate(bearer, body);
     }
 
+    //Send create request to Supabase
     private void doCreate(String bearer, JSONObject body) {
         Request req = new Request.Builder()
                 .url(BASE + "/rest/v1/qh_register")
@@ -201,32 +155,25 @@ public class AddVendor extends AppCompatActivity {
                 .addHeader("Prefer", "return=representation")
                 .post(RequestBody.create(body.toString(), JSON))
                 .build();
-
         http.newCall(req).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, java.io.IOException e) {
-                runOnUiThread(() -> Toast.makeText(AddVendor.this, "Create failed: " + safeMsg(e), Toast.LENGTH_LONG).show());
             }
-
             @Override
             public void onResponse(Call call, Response response) {
                 try {
                     String resp = response.body() == null ? "" : response.body().string();
                     if (!response.isSuccessful()) {
-                        runOnUiThread(() -> Toast.makeText(AddVendor.this, "CREATE HTTP " + response.code() + " " + trim(resp, 400), Toast.LENGTH_LONG).show());
                         return;
                     }
-                    runOnUiThread(() -> {
-                        Toast.makeText(AddVendor.this, "Created", Toast.LENGTH_LONG).show();
-                        finish();
-                    });
+                    runOnUiThread(() -> finish());
                 } catch (Exception ex) {
-                    runOnUiThread(() -> Toast.makeText(AddVendor.this, "Create parse error", Toast.LENGTH_LONG).show());
                 }
             }
         });
     }
 
+    //Replaces unsafe text with hyphens
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -235,7 +182,6 @@ public class AddVendor extends AppCompatActivity {
         return t;
     }
 
+    //Cleans up text input
     private String nz(String s) { return s == null ? "" : s.trim(); }
-    private String trim(String s, int n) { return s == null ? "" : (s.length() <= n ? s : s.substring(0, n) + "…"); }
-    private String safeMsg(Throwable t) { return t == null || t.getMessage() == null ? "" : t.getMessage(); }
 }

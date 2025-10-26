@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,45 +26,36 @@ import java.util.List;
 public abstract class SearchBase extends AppCompatActivity {
     protected abstract String getFieldKey();
     protected abstract String getScreenTitle();
-
     protected String role = "PUBLIC";
     protected String council = null;
-
     protected final OkHttpClient client = new OkHttpClient();
     protected final List<JSONObject> all = new ArrayList<>();
     protected final List<JSONObject> filtered = new ArrayList<>();
     protected VendorList adapter;
-
     private static final String BASE = "https://mpvttjjpwghyydfumqxi.supabase.co";
     private static final String ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnR0ampwd2doeXlkZnVtcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTAzODcsImV4cCI6MjA3MjYyNjM4N30.IUkEutAeR0fDZswjXXduZu2CyZJ5eNt9KvCaF0ax9DE";
-
     private static final String RPC_EXTERNAL = "/rest/v1/rpc/get_external_register";
     private static final String RPC_INTERNAL = "/rest/v1/rpc/get_internal_register";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
     private static final int PAGE_LIMIT = 1000;
     private static final int PAGE_OFFSET = 0;
 
+    //Checks if user is public user
+    private boolean isPublicUser() {
+        String r = UserAccount.get().getRole();
+        return r == null || r.equalsIgnoreCase("PUBLIC");
+    }
+
+    //Sets up search screen
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_list_page);
-
         Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
-
         if (UserAccount.get().getRole() != null) role = UserAccount.get().getRole();
         council = UserAccount.get().getCouncil();
-
         boolean isPublic = role == null || role.equalsIgnoreCase("PUBLIC");
-        boolean isQH = role != null && (
-                role.equalsIgnoreCase("QH") ||
-                        role.equalsIgnoreCase("QLD") ||
-                        role.equalsIgnoreCase("QLD_HEALTH") ||
-                        role.equalsIgnoreCase("QUEENSLAND_HEALTH")
-        );
-        boolean isCouncil = role != null && role.equalsIgnoreCase("COUNCIL");
-
         Button add = findViewById(R.id.btnAdd);
         if (add != null) {
             if (isPublic) {
@@ -75,13 +65,12 @@ public abstract class SearchBase extends AppCompatActivity {
                 add.setOnClickListener(v -> startActivity(new Intent(this, AddVendor.class)));
             }
         }
-
         TextView title = findViewById(R.id.titleField);
         if (title != null) title.setText(getScreenTitle());
-
         RecyclerView rv = findViewById(R.id.recyclerVendors);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setHasFixedSize(true);
+        //Sets up list of vendors, handles row clicks
         adapter = new VendorList(filtered, o -> {
             Intent d = new Intent(this, VendorDetails.class);
             d.putExtra("id", o.optString("id", ""));
@@ -104,7 +93,7 @@ public abstract class SearchBase extends AppCompatActivity {
             startActivity(d);
         });
         rv.setAdapter(adapter);
-
+        //Handles active filtering for search bar
         SearchView sv = findViewById(R.id.searchView);
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -118,65 +107,55 @@ public abstract class SearchBase extends AppCompatActivity {
                 return true;
             }
         });
-
-        if (isPublic) {
-            Toast.makeText(this, "Loading public register", Toast.LENGTH_SHORT).show();
+        final boolean publicUser = isPublicUser();
+        final String token = UserAccount.get().getAccessToken();
+        //Loads data from supabase, depending on user access level
+        if (publicUser) {
             fetchExternal();
         } else {
-            String token = UserAccount.get().getAccessToken();
-            if (!TextUtils.isEmpty(token)) {
-                Toast.makeText(this, "Loading internal register", Toast.LENGTH_SHORT).show();
-                fetchInternalWithToken(token);
-            } else {
-                Toast.makeText(this, "Session expired. Loading public register.", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(token)) {
                 fetchExternal();
+            } else {
+                fetchInternalWithToken(token);
             }
         }
     }
-
+    //Pulls data from external table if Public User
     private void fetchExternal() {
         postRpc(RPC_EXTERNAL, null);
     }
 
+    //If User has correct token, pulls from internal table
     private void fetchInternalWithToken(String bearerToken) {
         postRpc(RPC_INTERNAL, bearerToken);
     }
 
+    //Sends request to Supabase to get data
     private void postRpc(String rpcPath, String bearerToken) {
         JSONObject body = new JSONObject();
         try {
             body.put("p_limit", PAGE_LIMIT);
             body.put("p_offset", PAGE_OFFSET);
         } catch (Exception ignored) { }
-
         Request.Builder b = new Request.Builder()
                 .url(BASE + rpcPath)
                 .addHeader("apikey", ANON)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json");
         if (!TextUtils.isEmpty(bearerToken)) b.addHeader("Authorization", "Bearer " + bearerToken);
-
         Request req = b.post(RequestBody.create(body.toString(), JSON)).build();
-
         client.newCall(req).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
-                    Toast.makeText(SearchBase.this, "Network error: " + (e.getMessage() == null ? "" : e.getMessage()), Toast.LENGTH_LONG).show();
                     filtered.clear();
                     adapter.notifyDataSetChanged();
                 });
             }
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String raw = response.body() != null ? response.body().string() : "";
                 if (!response.isSuccessful()) {
-                    String msg = "HTTP " + response.code();
-                    if (!TextUtils.isEmpty(raw))
-                        msg += ": " + (raw.length() > 160 ? raw.substring(0, 160) + "…" : raw);
-                    String finalMsg = msg;
-                    runOnUiThread(() -> Toast.makeText(SearchBase.this, finalMsg, Toast.LENGTH_LONG).show());
                     return;
                 }
                 try {
@@ -187,16 +166,15 @@ public abstract class SearchBase extends AppCompatActivity {
                         if (o != null) all.add(o);
                     }
                     runOnUiThread(() -> {
-                        Toast.makeText(SearchBase.this, "Loaded " + all.size() + " rows", Toast.LENGTH_SHORT).show();
                         filter("");
                     });
                 } catch (Exception ex) {
-                    runOnUiThread(() -> Toast.makeText(SearchBase.this, "Parse error", Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
 
+    //Filters the list to reflect text in search bar
     protected void filter(String q) {
         String s = q == null ? "" : q.trim().toLowerCase();
         filtered.clear();

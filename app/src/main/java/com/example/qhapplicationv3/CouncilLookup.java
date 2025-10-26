@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 public final class CouncilLookup {
     private CouncilLookup() {}
 
+    //Stores all council names for selection
     private static final List<String> COUNCILS = Arrays.asList(
             "Aurukun Shire Council",
             "Balonne Shire Council",
@@ -89,10 +91,12 @@ public final class CouncilLookup {
             "Yarrabah Aboriginal Shire Council"
     );
 
+    //Returns a list of all council names
     public static List<String> all() {
         return new ArrayList<>(COUNCILS);
     }
 
+    //Fixes any formatting issues when inputting a council name
     public static String toDisplay(String anyForm) {
         if (TextUtils.isEmpty(anyForm)) return "";
         String norm = slug(anyForm);
@@ -102,6 +106,7 @@ public final class CouncilLookup {
         return titleFromSlug(norm);
     }
 
+    //Replaces unsafe text with hyphens
     public static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -110,6 +115,7 @@ public final class CouncilLookup {
         return t;
     }
 
+    //Fixes dashed text
     private static String titleFromSlug(String normSlug) {
         if (TextUtils.isEmpty(normSlug)) return "";
         String[] parts = normSlug.split("-");

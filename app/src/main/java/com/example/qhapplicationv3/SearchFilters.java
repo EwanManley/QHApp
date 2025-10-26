@@ -11,7 +11,7 @@ public class SearchFilters extends AppCompatActivity {
     private String council;
     private String email;
 
-    //Sets up filter screen and buttons
+    //Sets up filter screen and buttons.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,7 +31,7 @@ public class SearchFilters extends AppCompatActivity {
         btnGoAll.setOnClickListener(v -> startWithSession(SearchAll.class));
         btnBack.setOnClickListener(v -> navigateToAuth());
         btnGoHome.setOnClickListener(v -> navigateToSplash());
-        //Handles press of back button
+        //Handles press of back button.
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -40,7 +40,7 @@ public class SearchFilters extends AppCompatActivity {
         });
     }
 
-    //Sends User back to log in screen
+    //Sends User back to log in screen.
     private void navigateToAuth() {
         Intent i = new Intent(this, Authentication.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -48,7 +48,7 @@ public class SearchFilters extends AppCompatActivity {
         finish();
     }
 
-    //Sends user back to splash screen
+    //Sends user back to splash screen.
     private void navigateToSplash() {
         Intent i = new Intent(this, MainLanding.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -56,7 +56,7 @@ public class SearchFilters extends AppCompatActivity {
         finish();
     }
 
-    //Opens search screen while retaining user info
+    //Opens search screen while retaining user info.
     private void startWithSession(Class<?> target) {
         Intent i = new Intent(this, target);
         i.putExtra("role", role);

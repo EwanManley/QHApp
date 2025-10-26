@@ -15,7 +15,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-//Class handles showing User all available details for a Vendor of their choosing
+//Class handles showing User all available details for a Vendor of their choosing.
 public class VendorDetails extends AppCompatActivity {
     private static final String BASE = "https://mpvttjjpwghyydfumqxi.supabase.co";
     private static final String ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnR0ampwd2doeXlkZnVtcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTAzODcsImV4cCI6MjA3MjYyNjM4N30.IUkEutAeR0fDZswjXXduZu2CyZJ5eNt9KvCaF0ax9DE";
@@ -23,7 +23,7 @@ public class VendorDetails extends AppCompatActivity {
     private String role;
     private String council;
 
-    //Sets up the the screen and displays vendor information
+    //Sets up the the screen and displays vendor information.
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.vendor_info_page);
@@ -86,7 +86,7 @@ public class VendorDetails extends AppCompatActivity {
         }
     }
 
-    //Handles deletion of vendors from Supabase
+    //Handles deletion of vendors from Supabase.
     public static void deleteVendor(Context ctx, String rowId, String recordLga, Runnable onSuccess) {
         if (rowId == null || rowId.isEmpty()) return;
         String token = UserAccount.get().getAccessToken();
@@ -123,7 +123,7 @@ public class VendorDetails extends AppCompatActivity {
         });
     }
 
-    //Replaces unsafe text with hyphens
+    //Replaces unsafe text with hyphens.
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -132,7 +132,7 @@ public class VendorDetails extends AppCompatActivity {
         return t;
     }
 
-    //Displays vendor field and information attached
+    //Displays vendor field and information attached.
     private void setField(int id, String label, String value, boolean optional) {
         TextView tv = findViewById(id);
         if (tv == null) return;
@@ -142,20 +142,20 @@ public class VendorDetails extends AppCompatActivity {
         else tv.setText(label + " " + v);
     }
 
-    //Cleans text, removes null spaces
+    //Cleans text, removes null spaces.
     private String clean(String s) {
         if (s == null) return "";
         String t = s.trim();
         return t.equalsIgnoreCase("null") ? "" : t;
     }
 
-    //Hides field from view
+    //Hides field from view.
     private void hide(int id) {
         View v = findViewById(id);
         if (v != null) v.setVisibility(View.GONE);
     }
 
-    //Makes a field visible
+    //Makes a field visible.
     private void show(int id) {
         View v = findViewById(id);
         if (v != null) v.setVisibility(View.VISIBLE);

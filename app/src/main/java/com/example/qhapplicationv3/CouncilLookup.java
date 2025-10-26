@@ -10,7 +10,7 @@ import java.util.List;
 public final class CouncilLookup {
     private CouncilLookup() {}
 
-    //Stores all council names for selection
+    //Stores all council names for selection.
     private static final List<String> COUNCILS = Arrays.asList(
             "Aurukun Shire Council",
             "Balonne Shire Council",
@@ -96,7 +96,7 @@ public final class CouncilLookup {
         return new ArrayList<>(COUNCILS);
     }
 
-    //Fixes any formatting issues when inputting a council name
+    //Fixes any formatting issues when inputting a council name.
     public static String toDisplay(String anyForm) {
         if (TextUtils.isEmpty(anyForm)) return "";
         String norm = slug(anyForm);
@@ -106,7 +106,7 @@ public final class CouncilLookup {
         return titleFromSlug(norm);
     }
 
-    //Replaces unsafe text with hyphens
+    //Replaces unsafe text with hyphens.
     public static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -115,7 +115,7 @@ public final class CouncilLookup {
         return t;
     }
 
-    //Fixes dashed text
+    //Fixes dashed text.
     private static String titleFromSlug(String normSlug) {
         if (TextUtils.isEmpty(normSlug)) return "";
         String[] parts = normSlug.split("-");

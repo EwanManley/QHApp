@@ -19,7 +19,7 @@ public class Authentication extends AppCompatActivity {
     private RadioButton rbCouncilMember;
     private Spinner spinnerCouncil;
 
-    //Sets up Login and Registration screens
+    //Sets up Login and Registration screens.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,7 +151,7 @@ public class Authentication extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> onLogin());
     }
 
-    //User registration and basic validation
+    //User registration and basic validation.
     private void onRegister() {
         String email = txt(etRegEmail);
         String pass = txt(etRegPassword);
@@ -197,7 +197,7 @@ public class Authentication extends AppCompatActivity {
         });
     }
 
-    //Handles login and remembers user token
+    //Handles login and remembers user token.
     private void onLogin() {
         String email = txt(etLoginEmail);
         String pass = txt(etLoginPassword);
@@ -232,7 +232,7 @@ public class Authentication extends AppCompatActivity {
         });
     }
 
-    //Enter app as a guest user, limited access
+    //Enter app as a guest user, limited access.
     private void goToFiltersAsPublic() {
         UserAccount.get().setEmail("public@guest");
         UserAccount.get().setRole("PUBLIC");
@@ -245,7 +245,7 @@ public class Authentication extends AppCompatActivity {
         finish();
     }
 
-    //Sends user back to splash screen
+    //Sends user back to splash screen.
     private void finishToSplash() {
         Intent i = new Intent(this, MainLanding.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -253,7 +253,7 @@ public class Authentication extends AppCompatActivity {
         finish();
     }
 
-    //Safely read text from box
+    //Safely read text from box.
     private static String txt(EditText e) {
         return e == null ? "" : e.getText().toString().trim();
     }

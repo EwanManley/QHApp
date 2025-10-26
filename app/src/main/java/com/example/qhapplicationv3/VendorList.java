@@ -12,28 +12,28 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONObject;
 import java.util.List;
 
-//Class lists vendor information and handles click functionality
+//Class lists vendor information and handles click functionality.
 public class VendorList extends RecyclerView.Adapter<VendorList.VH> {
 
-    //Runs when row is clicked
+    //Runs when row is clicked.
     public interface OnRowClick { void onClick(JSONObject obj); }
     private final List<JSONObject> items;
     private final OnRowClick onRowClick;
 
-    //Handles list and click functionality
+    //Handles list and click functionality.
     public VendorList(List<JSONObject> items, OnRowClick onRowClick) {
         this.items = items;
         this.onRowClick = onRowClick;
     }
 
-    //Creates the row layout for the list
+    //Creates the row layout for the list.
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_page, parent, false);
         return new VH(v);
     }
 
-    //Populates rows with vendor information
+    //Populates rows with vendor information.
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         JSONObject o = items.get(position);
@@ -85,11 +85,11 @@ public class VendorList extends RecyclerView.Adapter<VendorList.VH> {
         });
     }
 
-    //Gets the number of rows shown
+    //Gets the number of rows shown.
     @Override
     public int getItemCount() { return items.size(); }
 
-    //Handles row view, preview information and additional buttons
+    //Handles row view, preview information and additional buttons.
     static class VH extends RecyclerView.ViewHolder {
         TextView title, subtitle;
         Button btnDelete;
@@ -101,7 +101,7 @@ public class VendorList extends RecyclerView.Adapter<VendorList.VH> {
         }
     }
 
-    //Replaces unsafe text with hyphens
+    //Replaces unsafe text with hyphens.
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();

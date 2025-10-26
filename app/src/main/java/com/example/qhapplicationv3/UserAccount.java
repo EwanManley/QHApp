@@ -15,7 +15,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-//Class handles user login, registration and saves user details
+//Class handles user login, registration and saves user details.
 public class UserAccount {
     private static final String BASE = "https://mpvttjjpwghyydfumqxi.supabase.co";
     private static final String ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdnR0ampwd2doeXlkZnVtcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTAzODcsImV4cCI6MjA3MjYyNjM4N30.IUkEutAeR0fDZswjXXduZu2CyZJ5eNt9KvCaF0ax9DE";
@@ -33,12 +33,12 @@ public class UserAccount {
     private String council;
     private String accessToken;
 
-    //Sends back login or register results
+    //Sends back login or register results.
     public interface AuthCallback {
         void onResult(boolean ok, String message, JSONObject profile);
     }
 
-    //Registers a new user account and saves user details
+    //Registers a new user account and saves user details.
     public static void register(Context ctx, String email, String password, String role, String council, AuthCallback cb) {
         try {
             JSONObject body = new JSONObject();
@@ -77,7 +77,7 @@ public class UserAccount {
         } catch (Exception e) { cb.onResult(false, "Sign-up build error", null); }
     }
 
-    //Logs in the user and loads their stored information
+    //Logs in the user and loads their stored information.
     public static void login(Context ctx, String email, String password, AuthCallback cb) {
         try {
             JSONObject body = new JSONObject();
@@ -120,7 +120,7 @@ public class UserAccount {
         } catch (Exception e) { cb.onResult(false, "Auth build error", null); }
     }
 
-    //Gets the users saved role, email and/or council
+    //Gets the users saved role, email and/or council.
     private static void fetchProfile(Context ctx, String email, String token, AuthCallback cb) {
         try {
             String url = BASE + "/rest/v1/profile?select=role,council&email=eq." + URLEncoder.encode(email, StandardCharsets.UTF_8.name()) + "&limit=1";
@@ -145,7 +145,7 @@ public class UserAccount {
         } catch (Exception e) { cb.onResult(false, "Profile build error", null); }
     }
 
-    //Saves or updates the user details stored in supabase
+    //Saves or updates the user details stored in supabase.
     private static void upsertProfile(Context ctx, String email, String role, String council, String token, AuthCallback cb) {
         try {
             JSONObject body = new JSONObject();
@@ -176,7 +176,7 @@ public class UserAccount {
         } catch (Exception e) { cb.onResult(false, "Profile upsert build error", null); }
     }
 
-    //Saves user information
+    //Saves user information.
     public void saveSession(Context ctx) {
         try {
             SharedPreferences prefs = ctx.getSharedPreferences("session", Context.MODE_PRIVATE);
@@ -189,7 +189,7 @@ public class UserAccount {
         } catch (Exception ignored) {}
     }
 
-    //Loads saved login information
+    //Loads saved login information.
     public void loadSavedSession(Context ctx) {
         SharedPreferences prefs = ctx.getSharedPreferences("session", Context.MODE_PRIVATE);
         String raw = prefs.getString("session_json", null);
@@ -203,7 +203,7 @@ public class UserAccount {
         } catch (Exception ignored) {}
     }
 
-    //Clears session data
+    //Clears session data.
     public void clearSession(Context ctx) {
         SharedPreferences prefs = ctx.getSharedPreferences("session", Context.MODE_PRIVATE);
         prefs.edit().remove("session_json").apply();

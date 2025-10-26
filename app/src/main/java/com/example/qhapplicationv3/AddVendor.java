@@ -27,7 +27,7 @@ public class AddVendor extends AppCompatActivity {
     private final OkHttpClient http = new OkHttpClient();
     private EditText etLga, etName, etTrading, etPhone, etLicence, etExpiry, etReg, etDesc, etVehicle, etMake, etModel, etColour, etPrimary, etSerial, etOther1, etStatus;
 
-    //Loads the screen for adding vendors
+    //Loads the screen for adding vendors.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +87,7 @@ public class AddVendor extends AppCompatActivity {
         btnSave.setOnClickListener(v -> beginCreate());
     }
 
-    //Validates that necessary fields are filled
+    //Validates that necessary fields are filled.
     private void beginCreate() {
         String role = UserAccount.get().getRole();
         String council = UserAccount.get().getCouncil();
@@ -145,7 +145,7 @@ public class AddVendor extends AppCompatActivity {
         doCreate(bearer, body);
     }
 
-    //Send create request to Supabase
+    //Send create request to Supabase.
     private void doCreate(String bearer, JSONObject body) {
         Request req = new Request.Builder()
                 .url(BASE + "/rest/v1/qh_register")
@@ -173,7 +173,7 @@ public class AddVendor extends AppCompatActivity {
         });
     }
 
-    //Replaces unsafe text with hyphens
+    //Replaces unsafe text with hyphens.
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -182,6 +182,6 @@ public class AddVendor extends AppCompatActivity {
         return t;
     }
 
-    //Cleans up text input
+    //Cleans up text input.
     private String nz(String s) { return s == null ? "" : s.trim(); }
 }

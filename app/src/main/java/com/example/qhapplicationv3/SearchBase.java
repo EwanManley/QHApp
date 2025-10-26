@@ -40,13 +40,13 @@ public abstract class SearchBase extends AppCompatActivity {
     private static final int PAGE_LIMIT = 1000;
     private static final int PAGE_OFFSET = 0;
 
-    //Checks if user is public user
+    //Checks if user is public user.
     private boolean isPublicUser() {
         String r = UserAccount.get().getRole();
         return r == null || r.equalsIgnoreCase("PUBLIC");
     }
 
-    //Sets up search screen
+    //Sets up search screen.
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +70,7 @@ public abstract class SearchBase extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.recyclerVendors);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setHasFixedSize(true);
-        //Sets up list of vendors, handles row clicks
+        //Sets up list of vendors, handles row clicks.
         adapter = new VendorList(filtered, o -> {
             Intent d = new Intent(this, VendorDetails.class);
             d.putExtra("id", o.optString("id", ""));
@@ -93,7 +93,7 @@ public abstract class SearchBase extends AppCompatActivity {
             startActivity(d);
         });
         rv.setAdapter(adapter);
-        //Handles active filtering for search bar
+        //Handles active filtering for search bar.
         SearchView sv = findViewById(R.id.searchView);
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -109,7 +109,7 @@ public abstract class SearchBase extends AppCompatActivity {
         });
         final boolean publicUser = isPublicUser();
         final String token = UserAccount.get().getAccessToken();
-        //Loads data from supabase, depending on user access level
+        //Loads data from supabase, depending on user access level.
         if (publicUser) {
             fetchExternal();
         } else {
@@ -120,17 +120,17 @@ public abstract class SearchBase extends AppCompatActivity {
             }
         }
     }
-    //Pulls data from external table if Public User
+    //Pulls data from external table if Public User.
     private void fetchExternal() {
         postRpc(RPC_EXTERNAL, null);
     }
 
-    //If User has correct token, pulls from internal table
+    //If User has correct token, pulls from internal table.
     private void fetchInternalWithToken(String bearerToken) {
         postRpc(RPC_INTERNAL, bearerToken);
     }
 
-    //Sends request to Supabase to get data
+    //Sends request to Supabase to get data.
     private void postRpc(String rpcPath, String bearerToken) {
         JSONObject body = new JSONObject();
         try {
@@ -174,7 +174,7 @@ public abstract class SearchBase extends AppCompatActivity {
         });
     }
 
-    //Filters the list to reflect text in search bar
+    //Filters the list to reflect text in search bar.
     protected void filter(String q) {
         String s = q == null ? "" : q.trim().toLowerCase();
         filtered.clear();

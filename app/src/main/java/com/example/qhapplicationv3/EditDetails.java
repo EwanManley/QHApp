@@ -29,7 +29,7 @@ public class EditDetails extends AppCompatActivity {
     private String rowId;
     private EditText etTrading, etName, etPhone, etLicence, etReg, etExpiry, etStatus, etDesc, etVehicle, etMake, etModel, etColour, etPrimary, etSerial, etOther1, etLga;
 
-    //Loads the screen for editing vendors
+    //Loads the screen for editing vendors.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,7 +108,7 @@ public class EditDetails extends AppCompatActivity {
         btnSave.setOnClickListener(v -> save());
     }
 
-    //Checks that input is valid, and saves
+    //Checks that input is valid, and saves.
     private void save() {
         if (TextUtils.isEmpty(rowId)) { return; }
         String role = UserAccount.get().getRole();
@@ -149,7 +149,7 @@ public class EditDetails extends AppCompatActivity {
         doPatch(bearer, patch);
     }
 
-    //Updates the database with the new/altered information
+    //Updates the database with the new/altered information.
     private void doPatch(String bearer, JSONObject patch) {
         HttpUrl url = HttpUrl.parse(BASE + "/rest/v1/qh_register").newBuilder()
                 .addQueryParameter("id", "eq." + rowId)
@@ -180,19 +180,19 @@ public class EditDetails extends AppCompatActivity {
         });
     }
 
-    //Adds a required field
+    //Adds a required field.
     private void putReq(JSONObject o, String key, EditText src) throws Exception { o.put(key, nz(src.getText().toString())); }
 
-    //Adds an optional field
+    //Adds an optional field.
     private void putOpt(JSONObject o, String key, EditText src) throws Exception { String v = nz(src.getText().toString()); if (!v.isEmpty()) o.put(key, v); }
 
-    //Check if the server has updated the record
+    //Check if the server has updated the record.
     private boolean looksLikeUpdated(String body) {
         try { return new JSONArray(body).length() > 0; }
         catch (Exception ignore) { return body.trim().startsWith("{") || body.trim().startsWith("["); }
     }
 
-    //Replaces unsafe text with hyphens
+    //Replaces unsafe text with hyphens.
     private static String slug(String s) {
         if (s == null) return "";
         String t = s.trim().toLowerCase();
@@ -201,6 +201,6 @@ public class EditDetails extends AppCompatActivity {
         return t;
     }
 
-    //Cleans up text input
+    //Cleans up text input.
     private String nz(String s) { return s == null ? "" : s.trim(); }
 }

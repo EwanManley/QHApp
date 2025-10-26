@@ -50,6 +50,7 @@ public class SearchFilters extends AppCompatActivity {
 
     //Sends user back to splash screen.
     private void navigateToSplash() {
+        UserAccount.get().clearSession(this);
         Intent i = new Intent(this, MainLanding.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(i);
